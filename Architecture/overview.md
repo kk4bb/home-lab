@@ -1,0 +1,87 @@
+╔══════════════════════════════════════════════════════════════════╗
+║                   ELASTIC BLUE TEAM LAB SETUP                    ║
+╚══════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────┐   ┌──────────────────┐
+│     UBUNTU SERVER VM 1 (Central)        │   │  UBUNTU SERVER   │
+│     192.168.x.x (example)               │   │  VM 2 (Agent)    │
+│                                         │   │  192.168.x.y     │
+│  ┌─────────────────────────────────┐    │   │                  │
+│  │  ELASTICSEARCH CLUSTER          │    │   │  ┌────────────┐  │
+│  │  ├─ Node 1                      │    │   │  │ Elastic    │  │
+│  │  └─ Port: 9200 (REST API)       │    │   │  │ Agent v8.x │  │
+│  │     Port: 9300 (node comms)     │    │   │  │            │  │
+│  └─────────────────────────────────┘    │   │  │ Monitoring:│  │
+│           ▲                             │   │  │ • Logs     │  │
+│           │                             │   │  │ • Metrics  │  │
+│  ┌────────┴─────────────────────────┐   │   │  │ • Syslog   │  │
+│  │  KIBANA                          │   │   │  └────────────┘  │
+│  │  ├─ Fleet Server                 │   │   │                  │
+│  │  │  (Enrolls & manages agents)   │   │   │                  │
+│  │  ├─ Port: 5601 (Web UI)          │   │   │                  │
+│  │  └─ Port: 8220 (Fleet API)       │   │   │                  │
+│  │                                  │   │   │                  │
+│  └──────────────────────────────────┘   │   │                  │
+│                                         │   │                  │
+└─────────────────────────────────────────┘   └──────────────────┘
+
+═══════════════════════════════════════════════════════════════════
+                        TLS CONNECTIONS
+═══════════════════════════════════════════════════════════════════
+
+    Agent → Elasticsearch (Port 9200)
+    ┌─────────────────────────────────────────┐
+    │  TLS 1.2+ with certificate verification │
+    │  mTLS (mutual authentication)           │
+    └─────────────────────────────────────────┘
+                        ▲
+                        │
+    Agent → Kibana Fleet (Port 8220)
+    ┌─────────────────────────────────────────┐
+    │  TLS 1.2+ for policy enrollment         │
+    │  Agent gets enrolled via Fleet Server   │
+    └─────────────────────────────────────────┘
+                        ▲
+                        │
+    Kibana ↔ Elasticsearch (Port 9200)
+    ┌─────────────────────────────────────────┐
+    │  TLS for internal communication         │
+    │  Admin credentials for management       │
+    └─────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════
+                      DATA FLOW
+═══════════════════════════════════════════════════════════════════
+
+    Ubuntu VM2              Ubuntu VM1
+    ┌──────────────┐        ┌─────────────────────────────┐
+    │ Elastic      │        │   Elastic Stack             │
+    │ Agent        │        │                             │
+    │              │        │  ┌─────────────────────┐    │
+    │ • Collects   │        │  │   Elasticsearch     │    │
+    │   logs       │──TLS──▶│  │   (indexes data)    │    │
+    │ • Monitors   │        │  └─────────────────────┘    │
+    │   metrics    │        │            ▲                │
+    │ • Sends data │        │            │                │
+    │              │        │  ┌─────────┴─────────────┐  │
+    └──────────────┘        │  │   Kibana              │  │
+                            │  │ (visualize & manage)  │  │
+                            │  └───────────────────────┘  │
+                            └─────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════
+                    CERTIFICATE SETUP
+═══════════════════════════════════════════════════════════════════
+
+CA Certificate (Self-signed)
+├─ elasticsearch.crt (Elasticsearch certificate)
+├─ elasticsearch.key (Elasticsearch private key)
+├─ kibana.crt (Kibana certificate)
+├─ kibana.key (Kibana private key)
+└─ agent.crt (Agent certificate - for mTLS)
+   agent.key (Agent private key)
+
+Stored locations (typical):
+├─ /etc/elasticsearch/certs/  (Elasticsearch certs)
+├─ /etc/kibana/certs/         (Kibana certs)
+└─ /opt/elastic-agent/        (Agent certs)
