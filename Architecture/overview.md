@@ -9,7 +9,7 @@
 │  ┌─────────────────────────────────┐    │   │                  │
 │  │  ELASTICSEARCH CLUSTER          │    │   │  ┌────────────┐  │
 │  │  ├─ Node 1                      │    │   │  │ Elastic    │  │
-│  │  └─ Port: 9200 (REST API)       │    │   │  │ Agent v8.x │  │
+│  │  └─ Port: 9200 (REST API)       │    │   │  │ Agent v9.x │  │
 │  │     Port: 9300 (node comms)     │    │   │  │            │  │
 │  └─────────────────────────────────┘    │   │  │ Monitoring:│  │
 │           ▲                             │   │  │ • Logs     │  │
@@ -69,19 +69,3 @@
                             │  └───────────────────────┘  │
                             └─────────────────────────────┘
 
-═══════════════════════════════════════════════════════════════════
-                    CERTIFICATE SETUP
-═══════════════════════════════════════════════════════════════════
-
-CA Certificate (Self-signed)
-├─ elasticsearch.crt (Elasticsearch certificate)
-├─ elasticsearch.key (Elasticsearch private key)
-├─ kibana.crt (Kibana certificate)
-├─ kibana.key (Kibana private key)
-└─ agent.crt (Agent certificate - for mTLS)
-   agent.key (Agent private key)
-
-Stored locations (typical):
-├─ /etc/elasticsearch/certs/  (Elasticsearch certs)
-├─ /etc/kibana/certs/         (Kibana certs)
-└─ /opt/elastic-agent/        (Agent certs)

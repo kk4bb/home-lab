@@ -344,6 +344,8 @@ server.ssl.certificate: /etc/kibana/kibana.crt
 server.ssl.key: /etc/kibana/kibana.key
 ```
 
+To be able to edit the agent outputs through the UI, comment out the ouputs section ```xpack.fleet.outputs``` at the end of the file
+
 Restart Kibana:
 
 ```bash
